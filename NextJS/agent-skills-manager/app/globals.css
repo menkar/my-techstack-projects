@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+/*
+  Tailwind dark: classes activate when an ancestor carries class="dark".
+  Combined with data-theme="dark" on <html>, DaisyUI tokens and
+  Tailwind dark: utilities both work from the same root element.
+*/
+@variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
