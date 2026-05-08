@@ -1,74 +1,82 @@
 import Link from "next/link";
-import PageShell from "../components/PageShell";
-import { getSkills } from "./SKILLS";
+import { prisma } from "@/lib/prisma";
+
+/**
+ * Skills Gallery - ISR (Incremental Static Regeneration)
+ * Revalidates every 60 seconds for fresh content
+ */
+export const revalidate = 60;
+
+export const metadata = {
+  title: "Browse Skills | Agent Skills Manager",
+  description: "Explore public AI agent skills created by the community",
+};
+
+async function getPublicSkills() {
+  const skills = await prisma.skill.findMany({
+    where: { isPublic: true },
+    include: {
+      author: {
+        select: { name: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  return skills;
+}
 
 export default async function SkillsPage() {
-  const skills = await getSkills();
+  const skills = await getPublicSkills();
 
   return (
-    <PageShell>
-      <div className="flex flex-col gap-8">
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Public Skills Gallery</h1>
+          <p className="text-base-content/70 mt-2">
+            This page uses ISR - revalidates every 60 seconds
+          </p>
+        </div>
+        <div className="badge badge-secondary badge-lg">ISR: 60s</div>
+      </div>
 
-        {/* Page header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-1.5">
-            <p className="text-xs font-semibold uppercase tracking-widest text-indigo-400">
-              Directory
-            </p>
-            <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Skills
-            </h1>
-            <p className="text-zinc-400">
-              {skills.length === 0
-                ? "No skills yet — add your first one."
-                : `${skills.length} skill${skills.length === 1 ? "" : "s"} available.`}
-            </p>
-          </div>
-          <Link
-            href="/skills/create"
-            className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow transition-colors hover:bg-indigo-500"
-          >
-            + Create new skill
+      {skills.length === 0 ? (
+        <div className="text-center py-16">
+          <div className="text-6xl mb-4">📭</div>
+          <h2 className="text-xl font-semibold mb-2">No skills yet</h2>
+          <p className="text-base-content/70 mb-4">
+            Be the first to create a skill!
+          </p>
+          <Link href="/register" className="btn btn-primary">
+            Get Started
           </Link>
         </div>
-
-        {/* Empty state */}
-        {skills.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900/60 py-16 text-center">
-            <p className="text-zinc-500">Nothing here yet.</p>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {skills.map((skill) => (
             <Link
-              href="/skills/create"
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+              key={skill.id}
+              href={`/skills/${skill.id}`}
+              className="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow"
             >
-              Add your first skill
+              <div className="card-body">
+                <h2 className="card-title">{skill.name}</h2>
+                <p className="text-base-content/70 line-clamp-2">
+                  {skill.description}
+                </p>
+                <div className="card-actions justify-between items-center mt-4">
+                  <span className="text-sm text-base-content/60">
+                    by {skill.author.name}
+                  </span>
+                  <span className="text-xs text-base-content/50">
+                    {new Date(skill.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
             </Link>
-          </div>
-        ) : (
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
-            {skills.map((skill) => (
-              <li key={skill.id}>
-                <Link
-                  href={`/skills/${skill.id}`}
-                  className="group flex flex-col gap-2.5 rounded-xl border border-zinc-800 bg-zinc-900 p-5 shadow transition-all hover:border-indigo-500/50 hover:bg-zinc-800/80"
-                >
-                  <span className="inline-block self-start rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-xs font-medium text-indigo-400">
-                    {skill.category}
-                  </span>
-                  <span className="font-semibold text-zinc-100 transition-colors group-hover:text-white">
-                    {skill.name}
-                  </span>
-                  <span className="line-clamp-2 text-sm leading-relaxed text-zinc-500">
-                    {skill.description}
-                  </span>
-                  <span className="mt-auto self-end text-xs text-indigo-500 opacity-0 transition-opacity group-hover:opacity-100">
-                    View details →
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </PageShell>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

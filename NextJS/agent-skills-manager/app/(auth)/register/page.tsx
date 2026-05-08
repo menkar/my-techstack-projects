@@ -1,57 +1,150 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import PageShell from "../../components/PageShell";
+import { useAuth } from "@/hooks/useAuth";
 
+/**
+ * Register Page - CSR (Client-Side Rendering)
+ * Uses client-side state for form handling and registration
+ */
 export default function RegisterPage() {
+  const router = useRouter();
+  const { register, isAuthenticated, isLoading } = useAuth();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Redirect if already authenticated
+  if (!isLoading && isAuthenticated) {
+    router.push("/dashboard");
+    return null;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await register({ email, password, name });
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration failed");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <PageShell className="max-w-md">
-      <div className="flex flex-col gap-8">
+    <>
+      <h2 className="card-title text-2xl justify-center">Create Account</h2>
+      <p className="text-center text-base-content/70">
+        Join to create and share agent skills
+      </p>
 
-        <header className="space-y-1.5 text-center sm:text-left">
-          <p className="text-xs font-semibold uppercase tracking-widest text-indigo-400">
-            Account
-          </p>
-          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            Create account
-          </h1>
-          <p className="text-zinc-400">
-            Registration is not yet implemented. This is a styled placeholder.
-          </p>
-        </header>
-
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-xl sm:p-8">
-          <div className="flex flex-col gap-5">
-            {[
-              { label: "Full name", type: "text", placeholder: "Jane Smith" },
-              { label: "Email", type: "email", placeholder: "jane@example.com" },
-              { label: "Password", type: "password", placeholder: "••••••••" },
-              { label: "Confirm password", type: "password", placeholder: "••••••••" },
-            ].map((field) => (
-              <div key={field.label} className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-zinc-300">{field.label}</label>
-                <input
-                  type={field.type}
-                  disabled
-                  placeholder={field.placeholder}
-                  className="w-full cursor-not-allowed rounded-lg border border-zinc-700 bg-zinc-800/50 px-3.5 py-2.5 text-sm text-zinc-500 outline-none"
-                />
-              </div>
-            ))}
-            <button
-              type="button"
-              disabled
-              className="mt-1 inline-flex h-10 w-full cursor-not-allowed items-center justify-center rounded-lg bg-indigo-600/50 text-sm font-semibold text-white/50"
-            >
-              Create account (not implemented)
-            </button>
-            <p className="text-center text-sm text-zinc-600">
-              Already have an account?{" "}
-              <Link href="/login" className="text-indigo-400 hover:text-indigo-300">
-                Sign in
-              </Link>
-            </p>
+      <form onSubmit={handleSubmit} className="mt-4">
+        {error && (
+          <div className="alert alert-error mb-4">
+            <span>{error}</span>
           </div>
+        )}
+
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">Name</span>
+          </label>
+          <input
+            type="text"
+            placeholder="Your name"
+            className="input input-bordered w-full"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
         </div>
-      </div>
-    </PageShell>
+
+        <div className="form-control mt-4">
+          <label className="label">
+            <span className="label-text">Email</span>
+          </label>
+          <input
+            type="email"
+            placeholder="you@example.com"
+            className="input input-bordered w-full"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="form-control mt-4">
+          <label className="label">
+            <span className="label-text">Password</span>
+          </label>
+          <input
+            type="password"
+            placeholder="••••••••"
+            className="input input-bordered w-full"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+          />
+        </div>
+
+        <div className="form-control mt-4">
+          <label className="label">
+            <span className="label-text">Confirm Password</span>
+          </label>
+          <input
+            type="password"
+            placeholder="••••••••"
+            className="input input-bordered w-full"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="form-control mt-6">
+          <button
+            type="submit"
+            className="btn btn-primary w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <span className="loading loading-spinner loading-sm"></span>
+            ) : (
+              "Create Account"
+            )}
+          </button>
+        </div>
+      </form>
+
+      <div className="divider">OR</div>
+
+      <p className="text-center">
+        Already have an account?{" "}
+        <Link href="/login" className="link link-primary">
+          Sign in
+        </Link>
+      </p>
+    </>
   );
 }

@@ -1,30 +1,29 @@
-import PageShell from "../components/PageShell";
-
 export default function SkillsLoading() {
   return (
-    <PageShell>
-      <div className="flex flex-col gap-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-2">
-            <div className="h-3 w-20 animate-pulse rounded bg-zinc-800" />
-            <div className="h-9 w-32 animate-pulse rounded-lg bg-zinc-800" />
-            <div className="h-4 w-40 animate-pulse rounded bg-zinc-800" />
-          </div>
-          <div className="h-10 w-40 animate-pulse rounded-lg bg-zinc-800" />
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <div className="skeleton h-8 w-64"></div>
+          <div className="skeleton h-4 w-48 mt-2"></div>
         </div>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <li key={i} className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
-              <div className="flex flex-col gap-3">
-                <div className="h-5 w-20 animate-pulse rounded-full bg-zinc-800" />
-                <div className="h-5 w-3/4 animate-pulse rounded bg-zinc-800" />
-                <div className="h-3 w-full animate-pulse rounded bg-zinc-800" />
-                <div className="h-3 w-4/5 animate-pulse rounded bg-zinc-800" />
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className="skeleton h-8 w-24"></div>
       </div>
-    </PageShell>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div key={i} className="card bg-base-200 shadow-xl">
+            <div className="card-body">
+              <div className="skeleton h-6 w-3/4"></div>
+              <div className="skeleton h-4 w-full mt-2"></div>
+              <div className="skeleton h-4 w-2/3 mt-1"></div>
+              <div className="flex justify-between mt-4">
+                <div className="skeleton h-4 w-20"></div>
+                <div className="skeleton h-4 w-16"></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "./components/Header";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import Providers from "@/components/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,7 +17,13 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Agent Skills Manager",
-  description: "Organize and explore agent skills.",
+  description:
+    "Create, manage, and share AI agent skills. A Next.js demo showcasing SSG, SSR, ISR, and CSR patterns with Prisma and DaisyUI.",
+  openGraph: {
+    title: "Agent Skills Manager",
+    description: "Create, manage, and share AI agent skills publicly",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -24,20 +32,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      data-theme="dark"
-      className={`${geistSans.variable} ${geistMono.variable} dark min-h-screen scroll-smooth`}
-    >
-      {/*
-        data-theme="dark"  → activates DaisyUI dark CSS token set
-        class="dark"       → activates Tailwind dark: variant (configured in globals.css)
-        bg-zinc-950        → explicit Tailwind dark colour so body is always dark,
-                             even if DaisyUI token loading is delayed in dev
-      */}
-      <body className="flex min-h-screen flex-col bg-zinc-950 font-sans text-zinc-100 antialiased">
-        <Header />
-        <main className="flex min-h-0 flex-1 flex-col">{children}</main>
+    <html lang="en" data-theme="dark">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+      >
+        <Providers>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

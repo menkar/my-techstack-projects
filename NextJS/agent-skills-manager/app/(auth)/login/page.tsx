@@ -1,66 +1,108 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import PageShell from "../../components/PageShell";
+import { useAuth } from "@/hooks/useAuth";
 
+/**
+ * Login Page - CSR (Client-Side Rendering)
+ * Uses client-side state for form handling and authentication
+ */
 export default function LoginPage() {
+  const router = useRouter();
+  const { login, isAuthenticated, isLoading } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Redirect if already authenticated
+  if (!isLoading && isAuthenticated) {
+    router.push("/dashboard");
+    return null;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      await login({ email, password });
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <PageShell className="max-w-md">
-      <div className="flex flex-col gap-8">
+    <>
+      <h2 className="card-title text-2xl justify-center">Welcome Back</h2>
+      <p className="text-center text-base-content/70">
+        Sign in to manage your agent skills
+      </p>
 
-        <header className="space-y-1.5 text-center sm:text-left">
-          <p className="text-xs font-semibold uppercase tracking-widest text-indigo-400">
-            Account
-          </p>
-          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            Sign in
-          </h1>
-          <p className="text-zinc-400">
-            Authentication is not yet wired. This is a styled placeholder.
-          </p>
-        </header>
-
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-xl sm:p-8">
-          <div className="flex flex-col gap-5">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-zinc-300">Email</label>
-              <input
-                type="email"
-                disabled
-                placeholder="you@example.com"
-                className="w-full cursor-not-allowed rounded-lg border border-zinc-700 bg-zinc-800/50 px-3.5 py-2.5 text-sm text-zinc-500 outline-none"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-zinc-300">Password</label>
-              <input
-                type="password"
-                disabled
-                placeholder="••••••••"
-                className="w-full cursor-not-allowed rounded-lg border border-zinc-700 bg-zinc-800/50 px-3.5 py-2.5 text-sm text-zinc-500 outline-none"
-              />
-            </div>
-            <button
-              type="button"
-              disabled
-              className="mt-1 inline-flex h-10 w-full cursor-not-allowed items-center justify-center rounded-lg bg-indigo-600/50 text-sm font-semibold text-white/50"
-            >
-              Sign in (not implemented)
-            </button>
-            <p className="text-center text-sm text-zinc-600">
-              No account?{" "}
-              <Link href="/register" className="text-indigo-400 hover:text-indigo-300">
-                Register
-              </Link>
-            </p>
+      <form onSubmit={handleSubmit} className="mt-4">
+        {error && (
+          <div className="alert alert-error mb-4">
+            <span>{error}</span>
           </div>
+        )}
+
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">Email</span>
+          </label>
+          <input
+            type="email"
+            placeholder="you@example.com"
+            className="input input-bordered w-full"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
         </div>
 
-        <Link
-          href="/skills"
-          className="inline-flex h-10 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 px-5 text-sm font-medium text-zinc-300 text-center transition-colors hover:bg-zinc-700 hover:text-white"
-        >
-          Continue without signing in →
+        <div className="form-control mt-4">
+          <label className="label">
+            <span className="label-text">Password</span>
+          </label>
+          <input
+            type="password"
+            placeholder="••••••••"
+            className="input input-bordered w-full"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="form-control mt-6">
+          <button
+            type="submit"
+            className="btn btn-primary w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <span className="loading loading-spinner loading-sm"></span>
+            ) : (
+              "Sign In"
+            )}
+          </button>
+        </div>
+      </form>
+
+      <div className="divider">OR</div>
+
+      <p className="text-center">
+        Don&apos;t have an account?{" "}
+        <Link href="/register" className="link link-primary">
+          Sign up
         </Link>
-      </div>
-    </PageShell>
+      </p>
+    </>
   );
 }

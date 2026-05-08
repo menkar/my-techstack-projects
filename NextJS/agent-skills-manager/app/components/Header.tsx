@@ -1,130 +1,104 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
-
-const NAV_ITEMS = [
-  { href: "/skills", label: "Skills" },
-  { href: "/about", label: "About" },
-  { href: "/login", label: "Login" },
-  { href: "/register", label: "Register" },
-] as const;
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Header() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const closeMenu = useCallback(() => setMenuOpen(false), []);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeMenu();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [menuOpen, closeMenu]);
-
-  useEffect(() => {
-    document.documentElement.style.overflow = menuOpen ? "hidden" : "";
-    return () => { document.documentElement.style.overflow = ""; };
-  }, [menuOpen]);
+  const { isAuthenticated, user, logout, isLoading } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-900/90 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4 sm:h-16 sm:px-6 lg:px-8">
-
-        {/* Brand */}
-        <Link
-          href="/"
-          onClick={closeMenu}
-          className="flex shrink-0 items-center gap-2 font-semibold tracking-tight text-white transition-opacity hover:opacity-80"
-        >
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-xs font-bold text-white shadow">
-            A
-          </span>
-          <span className="hidden sm:inline">Agent Skills</span>
-        </Link>
-
-        {/* Desktop nav */}
-        <nav className="ml-auto hidden items-center gap-1 lg:flex" aria-label="Main navigation">
-          {NAV_ITEMS.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className="rounded-md px-3 py-1.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+    <div className="navbar bg-base-200 shadow-lg">
+      <div className="navbar-start">
+        <div className="dropdown">
+          <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              {label}
-            </Link>
-          ))}
-          <Link
-            href="/skills/create"
-            className="ml-2 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow transition-colors hover:bg-indigo-500"
-          >
-            + New Skill
-          </Link>
-        </nav>
-
-        {/* Mobile hamburger */}
-        <button
-          type="button"
-          aria-expanded={menuOpen}
-          aria-controls="mobile-nav"
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
-          onClick={() => setMenuOpen((o) => !o)}
-          className="ml-auto flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white lg:hidden"
-        >
-          {menuOpen ? (
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h8m-8 6h16"
+              />
             </svg>
-          ) : (
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          )}
-        </button>
-      </div>
-
-      {/* Mobile drawer */}
-      {menuOpen && (
-        <>
-          <button
-            type="button"
-            className="fixed inset-0 z-40 bg-black/70 lg:hidden"
-            aria-label="Close menu"
-            onClick={closeMenu}
-          />
-          <div
-            id="mobile-nav"
-            className="fixed inset-y-0 right-0 z-50 flex w-72 flex-col border-l border-zinc-800 bg-zinc-900 shadow-2xl lg:hidden"
-          >
-            <div className="flex h-14 items-center border-b border-zinc-800 px-5 sm:h-16">
-              <Link href="/" onClick={closeMenu} className="flex items-center gap-2 font-semibold text-white">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-xs font-bold">A</span>
-                Agent Skills
-              </Link>
-            </div>
-            <nav id="mobile-nav" className="flex flex-1 flex-col gap-1 p-4" aria-label="Mobile navigation">
-              {NAV_ITEMS.map(({ href, label }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={closeMenu}
-                  className="rounded-lg px-4 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white"
-                >
-                  {label}
-                </Link>
-              ))}
-              <div className="mt-4 border-t border-zinc-800 pt-4">
-                <Link
-                  href="/skills/create"
-                  onClick={closeMenu}
-                  className="flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
-                >
-                  + New Skill
-                </Link>
-              </div>
-            </nav>
           </div>
-        </>
-      )}
-    </header>
+          <ul
+            tabIndex={0}
+            className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
+          >
+            <li>
+              <Link href="/skills">Browse Skills</Link>
+            </li>
+            {isAuthenticated && (
+              <li>
+                <Link href="/dashboard">Dashboard</Link>
+              </li>
+            )}
+          </ul>
+        </div>
+        <Link href="/" className="btn btn-ghost text-xl">
+          🤖 Agent Skills
+        </Link>
+      </div>
+      <div className="navbar-center hidden lg:flex">
+        <ul className="menu menu-horizontal px-1">
+          <li>
+            <Link href="/skills">Browse Skills</Link>
+          </li>
+          {isAuthenticated && (
+            <li>
+              <Link href="/dashboard">Dashboard</Link>
+            </li>
+          )}
+        </ul>
+      </div>
+      <div className="navbar-end">
+        {isLoading ? (
+          <span className="loading loading-spinner loading-sm"></span>
+        ) : isAuthenticated ? (
+          <div className="dropdown dropdown-end">
+            <div
+              tabIndex={0}
+              role="button"
+              className="btn btn-ghost btn-circle avatar placeholder"
+            >
+              <div className="bg-primary text-primary-content w-10 rounded-full flex items-center justify-center">
+                <span className="text-lg">
+                  {user?.name?.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            </div>
+            <ul
+              tabIndex={0}
+              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
+            >
+              <li className="menu-title">{user?.name}</li>
+              <li>
+                <Link href="/dashboard">Dashboard</Link>
+              </li>
+              <li>
+                <Link href="/dashboard/skills/new">Create Skill</Link>
+              </li>
+              <li>
+                <button onClick={logout}>Logout</button>
+              </li>
+            </ul>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <Link href="/login" className="btn btn-ghost btn-sm">
+              Login
+            </Link>
+            <Link href="/register" className="btn btn-primary btn-sm">
+              Sign Up
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
